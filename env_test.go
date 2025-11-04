@@ -1,15 +1,15 @@
-package ops_test
+package deep_test
 
 import (
 	"errors"
 	"reflect"
 	"testing"
 
-	"github.com/krelinga/go-ops"
+	"github.com/krelinga/go-deep"
 )
 
 func TestNewEnv(t *testing.T) {
-	env := ops.NewEnv()
+	env := deep.NewEnv()
 	if env == nil {
 		t.Fatal("NewEnv() returned nil")
 	}
@@ -19,8 +19,8 @@ func TestMapEnv_Set(t *testing.T) {
 	tests := []struct {
 		name    string
 		typ     reflect.Type
-		tag     ops.Tag
-		val     ops.Val
+		tag     deep.Tag
+		val     deep.Val
 		wantErr error
 	}{
 		{
@@ -34,20 +34,20 @@ func TestMapEnv_Set(t *testing.T) {
 			typ:     nil,
 			tag:     "test_tag",
 			val:     "test_value",
-			wantErr: ops.ErrNilType,
+			wantErr: deep.ErrNilType,
 		},
 		{
 			name:    "nil tag",
 			typ:     reflect.TypeOf(""),
 			tag:     nil,
 			val:     "test_value",
-			wantErr: ops.ErrNilTag,
+			wantErr: deep.ErrNilTag,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env := ops.NewEnv()
+			env := deep.NewEnv()
 
 			if tt.wantErr != nil {
 				defer func() {
@@ -84,8 +84,8 @@ func TestMapEnv_Set(t *testing.T) {
 func TestMapEnv_SetAll(t *testing.T) {
 	tests := []struct {
 		name    string
-		tag     ops.Tag
-		val     ops.Val
+		tag     deep.Tag
+		val     deep.Val
 		wantErr error
 	}{
 		{
@@ -97,13 +97,13 @@ func TestMapEnv_SetAll(t *testing.T) {
 			name:    "nil tag",
 			tag:     nil,
 			val:     "test_value",
-			wantErr: ops.ErrNilTag,
+			wantErr: deep.ErrNilTag,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env := ops.NewEnv()
+			env := deep.NewEnv()
 
 			if tt.wantErr != nil {
 				defer func() {
@@ -152,17 +152,17 @@ func TestMapEnv_Get(t *testing.T) {
 	tests := []struct {
 		name    string
 		typ     reflect.Type
-		tag     ops.Tag
+		tag     deep.Tag
 		wantErr error
-		setupFn func(ops.Env)
-		wantVal ops.Val
+		setupFn func(deep.Env)
+		wantVal deep.Val
 		wantOk  bool
 	}{
 		{
 			name: "get existing value",
 			typ:  reflect.TypeOf(""),
 			tag:  "test_tag",
-			setupFn: func(env ops.Env) {
+			setupFn: func(env deep.Env) {
 				env.Set(reflect.TypeOf(""), "test_tag", "test_value")
 			},
 			wantVal: "test_value",
@@ -172,7 +172,7 @@ func TestMapEnv_Get(t *testing.T) {
 			name: "get non-existing value",
 			typ:  reflect.TypeOf(""),
 			tag:  "non_existing_tag",
-			setupFn: func(env ops.Env) {
+			setupFn: func(env deep.Env) {
 				// Don't set anything
 			},
 			wantVal: nil,
@@ -182,7 +182,7 @@ func TestMapEnv_Get(t *testing.T) {
 			name: "get from SetAll",
 			typ:  reflect.TypeOf(42),
 			tag:  "all_tag",
-			setupFn: func(env ops.Env) {
+			setupFn: func(env deep.Env) {
 				env.SetAll("all_tag", "all_value")
 			},
 			wantVal: "all_value",
@@ -192,19 +192,19 @@ func TestMapEnv_Get(t *testing.T) {
 			name:    "nil type",
 			typ:     nil,
 			tag:     "test_tag",
-			wantErr: ops.ErrNilType,
+			wantErr: deep.ErrNilType,
 		},
 		{
 			name:    "nil tag",
 			typ:     reflect.TypeOf(""),
 			tag:     nil,
-			wantErr: ops.ErrNilTag,
+			wantErr: deep.ErrNilTag,
 		},
 	}
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env := ops.NewEnv()
+			env := deep.NewEnv()
 
 			if tt.setupFn != nil {
 				tt.setupFn(env)
@@ -242,10 +242,10 @@ func TestMapEnv_Get(t *testing.T) {
 
 func TestWrapEnv(t *testing.T) {
 	t.Run("wrap with no options", func(t *testing.T) {
-		parent := ops.NewEnv()
+		parent := deep.NewEnv()
 		parent.Set(reflect.TypeOf(""), "parent_tag", "parent_value")
 
-		wrapped := ops.WrapEnv(parent)
+		wrapped := deep.WrapEnv(parent)
 
 		// Should be able to get parent values
 		val, ok := wrapped.Get(reflect.TypeOf(""), "parent_tag")
@@ -258,13 +258,13 @@ func TestWrapEnv(t *testing.T) {
 	})
 
 	t.Run("wrap with options", func(t *testing.T) {
-		parent := ops.NewEnv()
+		parent := deep.NewEnv()
 
-		opt := ops.OptFunc(func(env ops.Env) {
+		opt := deep.OptFunc(func(env deep.Env) {
 			env.Set(reflect.TypeOf(""), "opt_tag", "opt_value")
 		})
 
-		wrapped := ops.WrapEnv(parent, opt)
+		wrapped := deep.WrapEnv(parent, opt)
 
 		// Should be able to get option-set values
 		val, ok := wrapped.Get(reflect.TypeOf(""), "opt_tag")
@@ -277,10 +277,10 @@ func TestWrapEnv(t *testing.T) {
 	})
 
 	t.Run("child overrides parent", func(t *testing.T) {
-		parent := ops.NewEnv()
+		parent := deep.NewEnv()
 		parent.Set(reflect.TypeOf(""), "tag", "parent_value")
 
-		wrapped := ops.WrapEnv(parent)
+		wrapped := deep.WrapEnv(parent)
 		wrapped.Set(reflect.TypeOf(""), "tag", "child_value")
 
 		// Child value should override parent
@@ -303,10 +303,10 @@ func TestWrapEnv(t *testing.T) {
 	})
 
 	t.Run("fallback to parent", func(t *testing.T) {
-		parent := ops.NewEnv()
+		parent := deep.NewEnv()
 		parent.Set(reflect.TypeOf(""), "parent_only_tag", "parent_value")
 
-		wrapped := ops.WrapEnv(parent)
+		wrapped := deep.WrapEnv(parent)
 		wrapped.Set(reflect.TypeOf(""), "child_only_tag", "child_value")
 
 		// Should find parent value when not in child
@@ -330,8 +330,8 @@ func TestWrapEnv(t *testing.T) {
 }
 
 func TestWrappedEnv_SetAll(t *testing.T) {
-	parent := ops.NewEnv()
-	wrapped := ops.WrapEnv(parent)
+	parent := deep.NewEnv()
+	wrapped := deep.WrapEnv(parent)
 
 	wrapped.SetAll("all_tag", "all_value")
 
@@ -346,7 +346,7 @@ func TestWrappedEnv_SetAll(t *testing.T) {
 }
 
 func TestSetOverridesSetAll(t *testing.T) {
-	env := ops.NewEnv()
+	env := deep.NewEnv()
 	stringType := reflect.TypeOf("")
 
 	// First SetAll
@@ -382,7 +382,7 @@ func TestSetOverridesSetAll(t *testing.T) {
 }
 
 func TestSetAllOverridesSet(t *testing.T) {
-	env := ops.NewEnv()
+	env := deep.NewEnv()
 	stringType := reflect.TypeOf("")
 
 	// First Set for specific type

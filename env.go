@@ -1,4 +1,4 @@
-package ops
+package deep
 
 import "reflect"
 
@@ -84,7 +84,7 @@ func (e *mapEnv) Get(typ reflect.Type, tag Tag) (Val, bool) {
 
 type wrappedEnv struct {
 	parent Env
-	data *mapEnv
+	data   *mapEnv
 }
 
 func (e *wrappedEnv) Set(typ reflect.Type, tag Tag, val Val) {

@@ -1,4 +1,4 @@
-package ops_test
+package deep_test
 
 import (
 	"fmt"
@@ -6,7 +6,7 @@ import (
 	"testing"
 	"unsafe"
 
-	"github.com/krelinga/go-ops"
+	"github.com/krelinga/go-deep"
 )
 
 type testInt int
@@ -25,35 +25,35 @@ func TestFormat(t *testing.T) {
 			{
 				name: "Integer",
 				f: func() string {
-					return ops.Format(nil, 42)
+					return deep.Format(nil, 42)
 				},
 				want: "42",
 			},
 			{
 				name: "String",
 				f: func() string {
-					return ops.Format(nil, "hello")
+					return deep.Format(nil, "hello")
 				},
 				want: `"hello"`,
 			},
 			{
 				name: "Boolean",
 				f: func() string {
-					return ops.Format(nil, true)
+					return deep.Format(nil, true)
 				},
 				want: "true",
 			},
 			{
 				name: "Float",
 				f: func() string {
-					return ops.Format(nil, 3.14)
+					return deep.Format(nil, 3.14)
 				},
 				want: "3.14",
 			},
 			{
 				name: "Complex",
 				f: func() string {
-					return ops.Format(nil, 1+2i)
+					return deep.Format(nil, 1+2i)
 				},
 				want: "(1+2i)",
 			},
@@ -61,7 +61,7 @@ func TestFormat(t *testing.T) {
 				name: "Nil Pointer",
 				f: func() string {
 					var p *int
-					return ops.Format(nil, p)
+					return deep.Format(nil, p)
 				},
 				want: "<nil>",
 			},
@@ -69,7 +69,7 @@ func TestFormat(t *testing.T) {
 				name: "Nil Any Interface",
 				f: func() string {
 					var i any
-					return ops.Format(nil, i)
+					return deep.Format(nil, i)
 				},
 				want: "any(nil)",
 			},
@@ -79,7 +79,7 @@ func TestFormat(t *testing.T) {
 					var i interface {
 						Foo()
 					}
-					return ops.Format(nil, i)
+					return deep.Format(nil, i)
 				},
 				want: "interface { Foo() }(nil)",
 			},
@@ -87,7 +87,7 @@ func TestFormat(t *testing.T) {
 				name: "Nil Stringer Interface",
 				f: func() string {
 					var s fmt.Stringer
-					return ops.Format(nil, s)
+					return deep.Format(nil, s)
 				},
 				want: "fmt.Stringer(nil)",
 			},
@@ -95,15 +95,15 @@ func TestFormat(t *testing.T) {
 				name: "Custom Stringer",
 				f: func() string {
 					var s fmt.Stringer = testInt(7)
-					return ops.Format(nil, s)
+					return deep.Format(nil, s)
 				},
-				want: "fmt.Stringer(ops_test.testInt(7))",
+				want: "fmt.Stringer(deep_test.testInt(7))",
 			},
 			{
 				name: "Func",
 				f: func() string {
 					fn := func() {}
-					return ops.Format(nil, fn)
+					return deep.Format(nil, fn)
 				},
 				want: "func()(...)",
 			},
@@ -111,7 +111,7 @@ func TestFormat(t *testing.T) {
 				name: "Channel",
 				f: func() string {
 					ch := make(chan int)
-					return ops.Format(nil, ch)
+					return deep.Format(nil, ch)
 				},
 				want: "chan int(...)",
 			},
@@ -119,7 +119,7 @@ func TestFormat(t *testing.T) {
 				name: "Send-Only Channel",
 				f: func() string {
 					ch := make(chan<- int)
-					return ops.Format(nil, ch)
+					return deep.Format(nil, ch)
 				},
 				want: "chan<- int(...)",
 			},
@@ -127,7 +127,7 @@ func TestFormat(t *testing.T) {
 				name: "Receive-Only Channel",
 				f: func() string {
 					ch := make(<-chan int)
-					return ops.Format(nil, ch)
+					return deep.Format(nil, ch)
 				},
 				want: "<-chan int(...)",
 			},
@@ -135,7 +135,7 @@ func TestFormat(t *testing.T) {
 				name: "Unsafe Pointer",
 				f: func() string {
 					var up unsafe.Pointer
-					return ops.Format(nil, up)
+					return deep.Format(nil, up)
 				},
 				want: "unsafe.Pointer(...)",
 			},
@@ -143,7 +143,7 @@ func TestFormat(t *testing.T) {
 				name: "Slice",
 				f: func() string {
 					slice := []int{1, 2, 3}
-					return ops.Format(nil, slice)
+					return deep.Format(nil, slice)
 				},
 				want: `[]int{
   1,
@@ -155,7 +155,7 @@ func TestFormat(t *testing.T) {
 				name: "Array",
 				f: func() string {
 					array := [3]string{"a", "b", "c"}
-					return ops.Format(nil, array)
+					return deep.Format(nil, array)
 				},
 				want: `[3]string{
   "a",
@@ -167,7 +167,7 @@ func TestFormat(t *testing.T) {
 				name: "Map",
 				f: func() string {
 					m := map[string]int{"one": 1}
-					return ops.Format(nil, m)
+					return deep.Format(nil, m)
 				},
 				want: `map[string]int{
   "one": 1,
@@ -181,9 +181,9 @@ func TestFormat(t *testing.T) {
 						Age  int
 					}
 					p := Person{Name: "Alice", Age: 30}
-					return ops.Format(nil, p)
+					return deep.Format(nil, p)
 				},
-				want: `ops_test.Person{
+				want: `deep_test.Person{
   Name: "Alice",
   Age: 30,
 }`,
@@ -195,9 +195,9 @@ func TestFormat(t *testing.T) {
 						X, Y int
 					}
 					p := &Point{X: 10, Y: 20}
-					return ops.Format(nil, p)
+					return deep.Format(nil, p)
 				},
-				want: `&ops_test.Point{
+				want: `&deep_test.Point{
   X: 10,
   Y: 20,
 }`,
@@ -207,7 +207,7 @@ func TestFormat(t *testing.T) {
 				f: func() string {
 					str := "hello"
 					p := &str
-					return ops.Format(nil, p)
+					return deep.Format(nil, p)
 				},
 				want: `&"hello"`, // TODO: I don't like the way this looks.
 			},
@@ -215,7 +215,7 @@ func TestFormat(t *testing.T) {
 				name: "Uintptr",
 				f: func() string {
 					var up uintptr = 0x1234abcd
-					return ops.Format(nil, up)
+					return deep.Format(nil, up)
 				},
 				want: "0x1234abcd",
 			},
@@ -244,19 +244,19 @@ func TestFormat(t *testing.T) {
 		a := Animal{Species: "Dog", OwnedBy: &p, isGood: true}
 		tests := []struct {
 			name string
-			opt  ops.Opt
+			opt  deep.Opt
 			want string
 		}{
 			{
 				name: "Elide A Field",
-				opt: ops.FmtOpt(reflect.TypeFor[Person](), ops.FmtStruct{
-					Fields: map[ops.Field]ops.Fmt{
-						ops.NamedField("Age"): ops.FmtElide{},
+				opt: deep.FmtOpt(reflect.TypeFor[Person](), deep.FmtStruct{
+					Fields: map[deep.Field]deep.Fmt{
+						deep.NamedField("Age"): deep.FmtElide{},
 					},
 				}),
-				want: `ops_test.Animal{
+				want: `deep_test.Animal{
   Species: "Dog",
-  OwnedBy: &ops_test.Person{
+  OwnedBy: &deep_test.Person{
     Name: "Bob",
     Age: int(...),
   },
@@ -266,8 +266,8 @@ func TestFormat(t *testing.T) {
 		}
 		for _, tt := range tests {
 			t.Run(tt.name, func(t *testing.T) {
-				env := ops.WrapEnv(ops.NewEnv(), tt.opt)
-				got := ops.Format(env, a)
+				env := deep.WrapEnv(deep.NewEnv(), tt.opt)
+				got := deep.Format(env, a)
 				if got != tt.want {
 					t.Errorf("got %q, want %q", got, tt.want)
 				}
