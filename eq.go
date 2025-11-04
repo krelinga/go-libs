@@ -37,8 +37,8 @@ func EqualVals(env Env, v1, v2 reflect.Value) bool {
 }
 
 func Equal[T any](env Env, in1, in2 T) bool {
-	v1 := ValueFor(in1)
-	v2 := ValueFor(in2)
+	v1 := Value(in1)
+	v2 := Value(in2)
 	return EqualVals(env, v1, v2)
 }
 

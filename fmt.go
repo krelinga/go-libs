@@ -46,7 +46,7 @@ func FormatVal(env Env, v reflect.Value) string {
 }
 
 func Format[T any](env Env, in T) string {
-	v := ValueFor(in)
+	v := Value(in)
 	return FormatVal(env, v)
 }
 

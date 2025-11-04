@@ -13,7 +13,7 @@ func indent(s string) string {
 	return strings.Join(lines, "\n")
 }
 
-func ValueFor[T any](in T) reflect.Value {
+func Value[T any](in T) reflect.Value {
 	typ := reflect.TypeFor[T]()
 	v := reflect.ValueOf(in)
 	if typ.Kind() == reflect.Interface {
