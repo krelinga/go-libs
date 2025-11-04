@@ -173,7 +173,7 @@ func (sf FmtStruct) Fmt(env Env, v reflect.Value) string {
 		var key Field
 		var name string
 		if f.Anonymous {
-			key = EmbedField(f.Type)
+			key = EmbedTypeField(f.Type)
 			name = typeName(f.Type)
 		} else {
 			key = NamedField(f.Name)

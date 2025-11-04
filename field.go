@@ -14,12 +14,12 @@ func NamedField(name string) Field {
 	return namedField(name)
 }
 
-func EmbedField(typ reflect.Type) Field {
+func EmbedTypeField(typ reflect.Type) Field {
 	return embedField{Typ: typ}
 }
 
-func EmbedFieldFor[T any]() Field {
-	return EmbedField(reflect.TypeFor[T]())
+func EmbedField[T any]() Field {
+	return EmbedTypeField(reflect.TypeFor[T]())
 }
 
 type embedField struct {

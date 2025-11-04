@@ -181,7 +181,7 @@ func (cs EqStruct) Eq(env Env, v1, v2 reflect.Value) bool {
 		}
 		var key Field
 		if f.Anonymous {
-			key = EmbedField(f.Type)
+			key = EmbedTypeField(f.Type)
 		} else {
 			key = NamedField(f.Name)
 		}
