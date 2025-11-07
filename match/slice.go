@@ -8,13 +8,14 @@ import (
 )
 
 type Slice struct {
-	Matchers  []Matcher
-	Unordered bool
+	Matchers   []Matcher
+	Unordered  bool
+	AllowExtra bool
 }
 
 func (s Slice) Match(env deep.Env, vals Vals) Result {
 	got := deep.AsSlice(vals.Want1())
-	if len(got) != len(s.Matchers) {
+	if !s.AllowExtra && len(got) != len(s.Matchers) {
 		return NewResult(false, fmt.Sprintf("slice length mismatch: got %d, want %d", len(got), len(s.Matchers)))
 	}
 	if s.Unordered {
@@ -24,11 +25,18 @@ func (s Slice) Match(env deep.Env, vals Vals) Result {
 }
 
 func (s Slice) matchOrdered(env deep.Env, got []reflect.Value) Result {
-	for i, matcher := range s.Matchers {
-		result := matcher.Match(env, Vals{got[i]})
-		if !result.Matched() {
-			return NewResult(false, fmt.Sprintf("matcher %d did not match: %s", i, result.String()))
+	matcherIdx, valIdx := 0, 0
+	for matcherIdx < len(s.Matchers) && valIdx < len(got) {
+		matcher := s.Matchers[matcherIdx]
+		val := got[valIdx]
+		result := matcher.Match(env, Vals{val})
+		if result.Matched() {
+			matcherIdx++
 		}
+		valIdx++
+	}
+	if matcherIdx < len(s.Matchers) {
+		return NewResult(false, fmt.Sprintf("not all matchers matched: matched %d out of %d", matcherIdx, len(s.Matchers)))
 	}
 	return NewResult(true, "all matchers matched")
 }
