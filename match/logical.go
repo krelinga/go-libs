@@ -47,3 +47,15 @@ func NoneOf(matchers ...Matcher) Matcher {
 		return NewResult(true, "no matchers matched")
 	})
 }
+
+func True() Matcher {
+	return Func(func(env deep.Env, vals Vals) Result {
+		return NewResult(true, "always true")
+	})
+}
+
+func False() Matcher {
+	return Func(func(env deep.Env, vals Vals) Result {
+		return NewResult(false, "always false")
+	})
+}
