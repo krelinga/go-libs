@@ -53,3 +53,29 @@ func AsSlice(v reflect.Value) []reflect.Value {
 	}
 	return out
 }
+
+type MapEntry struct {
+	Key reflect.Value
+	Val reflect.Value
+}
+
+func AsMapEntries(v reflect.Value) []*MapEntry {
+	if !v.IsValid() {
+		panic(ErrInvalid)
+	}
+	if v.Kind() != reflect.Map {
+		panic(fmt.Errorf("%w: value is not a map: got %s", ErrWrongType, v.Kind()))
+	}
+	if v.IsNil() {
+		return nil
+	}
+	out := make([]*MapEntry, 0, v.Len())
+	i := v.MapRange()
+	for i.Next() {
+		out = append(out, &MapEntry{
+			Key: i.Key(),
+			Val: i.Value(),
+		})
+	}
+	return out
+}
