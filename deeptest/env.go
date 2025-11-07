@@ -36,11 +36,20 @@ type Env interface {
 	Skipf(format string, args ...any)
 	Skipped() bool
 	TempDir() string
+
+	// Akin to testing.T's Run method, but with the Env type.
+	Run(name string, f func(env Env)) bool
 }
 
 type envImpl struct {
 	deep.Env
 	*testing.T
+}
+
+func (e *envImpl) Run(name string, f func(env Env)) bool {
+	return e.T.Run(name, func(t *testing.T) {
+		f(NewEnv(t))
+	})
 }
 
 func NewEnv(t *testing.T) Env {
