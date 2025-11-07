@@ -1,6 +1,7 @@
 package deep
 
 import (
+	"fmt"
 	"reflect"
 	"strings"
 )
@@ -31,4 +32,24 @@ func typeName(t reflect.Type) string {
 		return "any"
 	}
 	return t.String()
+}
+
+func AsSlice(v reflect.Value) []reflect.Value {
+	if !v.IsValid() {
+		panic(ErrInvalid)
+	}
+	switch v.Kind() {
+	case reflect.Slice, reflect.Array:
+		// Expected case
+	default:
+		panic(fmt.Errorf("%w: value is not a slice or array: got %s", ErrWrongType, v.Kind()))
+	}
+	if v.IsNil() {
+		return nil
+	}
+	out := make([]reflect.Value, v.Len())
+	for i := 0; i < v.Len(); i++ {
+		out[i] = v.Index(i)
+	}
+	return out
 }
