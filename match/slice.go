@@ -2,6 +2,7 @@ package match
 
 import (
 	"fmt"
+	"reflect"
 
 	"github.com/krelinga/go-deep"
 )
@@ -12,9 +13,9 @@ type Slice struct {
 }
 
 func (s Slice) Match(env deep.Env, vals Vals) Result {
-	got := Want1[[]any](vals)
+	got := deep.AsSlice(vals.Want1())
 	if len(got) != len(s.Matchers) {
-		return NewResult(false, "slice length mismatch")
+		return NewResult(false, fmt.Sprintf("slice length mismatch: got %d, want %d", len(got), len(s.Matchers)))
 	}
 	if s.Unordered {
 		return s.matchUnordered(env, got)
@@ -22,9 +23,9 @@ func (s Slice) Match(env deep.Env, vals Vals) Result {
 	return s.matchOrdered(env, got)
 }
 
-func (s Slice) matchOrdered(env deep.Env, got []any) Result {
+func (s Slice) matchOrdered(env deep.Env, got []reflect.Value) Result {
 	for i, matcher := range s.Matchers {
-		result := matcher.Match(env, NewValsAny(got[i]))
+		result := matcher.Match(env, Vals{got[i]})
 		if !result.Matched() {
 			return NewResult(false, fmt.Sprintf("matcher %d did not match: %s", i, result.String()))
 		}
@@ -32,7 +33,7 @@ func (s Slice) matchOrdered(env deep.Env, got []any) Result {
 	return NewResult(true, "all matchers matched")
 }
 
-func (s Slice) matchUnordered(env deep.Env, got []any) Result {
+func (s Slice) matchUnordered(env deep.Env, got []reflect.Value) Result {
 	used := make([]bool, len(got))
 matchers:
 	for i, matcher := range s.Matchers {
@@ -40,7 +41,7 @@ matchers:
 			if used[j] {
 				continue
 			}
-			result := matcher.Match(env, NewValsAny(val))
+			result := matcher.Match(env, Vals{val})
 			if result.Matched() {
 				used[j] = true
 				continue matchers
