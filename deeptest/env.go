@@ -69,7 +69,7 @@ type wrappedEnv struct {
 
 func WrapEnv(env Env, opts ...deep.Opt) Env {
 	return &wrappedEnv{
-		Env: deep.WrapEnv(env, opts...),
+		Env:  deep.WrapEnv(env, opts...),
 		EnvT: env,
 	}
 }
