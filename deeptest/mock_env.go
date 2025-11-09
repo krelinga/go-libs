@@ -337,3 +337,14 @@ func NewMockEnv(opts ...MockOpt) (mockEnv MockEnv, cleanup func()) {
 		}
 	}
 }
+
+type Mocker []MockOpt
+
+func (m Mocker) Run(f func(Env)) *MockLog {
+	// TODO: implement
+	// I think this is a better interface vs. NewMockEnv + defer cleanup()
+	// This makes it cleaner for me to start a new goroutine with a mock env
+	// and ensure that it finishes before allowing the caller to view the
+	// results.
+	return nil
+}
