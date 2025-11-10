@@ -331,8 +331,67 @@ func TestHarness(t *testing.T) {
 		})
 	})
 
-	// TODO: add tests for:
-	// - Setenv()
+	t.Run("Setenv", func(t *testing.T) {
+		setup := func(t *testing.T) {
+			t.Helper()
+			if _, found := os.LookupEnv("EXAM_TEST_VAR"); found {
+				t.Fatalf("EXAM_TEST_VAR should not be set at start of test")
+			}
+		}
+
+		cleanup := func(t *testing.T) {
+			t.Helper()
+			os.Unsetenv("EXAM_TEST_VAR")
+		}
+
+		t.Run("un-set variable", func(t *testing.T) {
+			setup(t)
+			defer cleanup(t)
+
+			h := exam.Harness{}
+			h.Run(func(e exam.E) {
+				e.Setenv("EXAM_TEST_VAR", "value1")
+				v, found := os.LookupEnv("EXAM_TEST_VAR")
+				if !found {
+					t.Errorf("EXAM_TEST_VAR not found after Setenv")
+				}
+				if v != "value1" {
+					t.Errorf("expected EXAM_TEST_VAR=value1, got %q", v)
+				}
+			})
+			if _, found := os.LookupEnv("EXAM_TEST_VAR"); found {
+				t.Errorf("EXAM_TEST_VAR should be unset after test")
+			}
+		})
+
+		t.Run("override variable", func(t *testing.T) {
+			setup(t)
+			defer cleanup(t)
+
+			err := os.Setenv("EXAM_TEST_VAR", "original")
+			if err != nil {
+				t.Fatalf("Setenv failed: %v", err)
+			}
+			h := exam.Harness{}
+			h.Run(func(e exam.E) {
+				e.Setenv("EXAM_TEST_VAR", "value2")
+				v, found := os.LookupEnv("EXAM_TEST_VAR")
+				if !found {
+					t.Errorf("EXAM_TEST_VAR not found after Setenv")
+				}
+				if v != "value2" {
+					t.Errorf("expected EXAM_TEST_VAR=value2, got %q", v)
+				}
+			})
+			v, found := os.LookupEnv("EXAM_TEST_VAR")
+			if !found {
+				t.Errorf("EXAM_TEST_VAR should be restored after test")
+			}
+			if v != "original" {
+				t.Errorf("expected EXAM_TEST_VAR=original after test, got %q", v)
+			}
+		})
+	})
 
 	t.Run("TempDir", func(t *testing.T) {
 		t.Run("unique dirs for sub-tests", func(t *testing.T) {
