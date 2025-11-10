@@ -56,4 +56,17 @@ func TestHarness(t *testing.T) {
 			t.Errorf("expected %q, got %q", origDir, finalDir)
 		}
 	})
+
+	t.Run("Cleanup" , func(t *testing.T) {
+		h := exam.Harness{}
+		called := false
+		h.Run(func(e exam.E) {
+			e.Cleanup(func() {
+				called = true
+			})
+		})
+		if !called {
+			t.Errorf("cleanup not called")
+		}
+	})
 }
