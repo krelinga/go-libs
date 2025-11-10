@@ -333,5 +333,73 @@ func TestHarness(t *testing.T) {
 
 	// TODO: add tests for:
 	// - Setenv()
-	// - TempDir()
+
+	t.Run("TempDir", func(t *testing.T) {
+		t.Run("unique dirs for sub-tests", func(t *testing.T) {
+			h := exam.Harness{}
+			var dir0, dir1, dir2 string
+			h.Run(func(e exam.E) {
+				dir0 = e.TempDir()
+				e.Run("sub1", func(e exam.E) {
+					dir1 = e.TempDir()
+				})
+				e.Run("sub2", func(e exam.E) {
+					dir2 = e.TempDir()
+				})
+			})
+			if dir0 == dir1 || dir0 == dir2 || dir1 == dir2 {
+				t.Errorf("expected unique temp dirs, got %q, %q, %q", dir0, dir1, dir2)
+			}
+		})
+
+		t.Run("dirs are created", func(t *testing.T) {
+			h := exam.Harness{}
+			h.Run(func(e exam.E) {
+				dir := e.TempDir()
+				info, err := os.Stat(dir)
+				if err != nil {
+					t.Fatalf("TempDir does not exist: %v", err)
+				}
+				if !info.IsDir() {
+					t.Errorf("TempDir is not a directory")
+				}
+			})
+		})
+
+		t.Run("dirs are cleaned up", func(t *testing.T) {
+			h := exam.Harness{}
+			var dir string
+			h.Run(func(e exam.E) {
+				dir = e.TempDir()
+			})
+			_, err := os.Stat(dir)
+			if !os.IsNotExist(err) {
+				t.Errorf("TempDir was not cleaned up: %v", err)
+			}
+		})
+
+		t.Run("concurrent TempDir calls return unique values", func(t *testing.T) {
+			h := exam.Harness{}
+			numDirs := 10
+			dirs := make([]string, numDirs)
+			h.Run(func(e exam.E) {
+				var wg sync.WaitGroup
+				for i := range numDirs {
+					wg.Add(1)
+					go func(i int) {
+						defer wg.Done()
+						dirs[i] = e.TempDir()
+					}(i)
+				}
+				wg.Wait()
+			})
+			dirSet := make(map[string]struct{})
+			for _, dir := range dirs {
+				if _, exists := dirSet[dir]; exists {
+					t.Errorf("duplicate TempDir: %q", dir)
+				}
+				dirSet[dir] = struct{}{}
+			}
+		})
+	})
 }

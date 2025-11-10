@@ -79,7 +79,6 @@ type mockT struct {
 
 	log      *Log
 	cleanups []func()
-	tempDir  string
 	done     bool
 	mu       sync.Mutex
 }
@@ -395,21 +394,16 @@ func (t *mockT) TempDir() string {
 		panic("TempDir: T already done")
 	}
 
-	if t.tempDir != "" {
-		return t.tempDir
-	}
-
-	var err error
-	t.tempDir, err = os.MkdirTemp("", "exam-*")
+	dir, err := os.MkdirTemp("", "exam-*")
 	if err != nil {
 		panic(fmt.Errorf("TempDir: MkdirTemp failed: %w", err))
 	}
 	t.cleanupUnlocked(func() {
-		err := os.RemoveAll(t.tempDir)
+		err := os.RemoveAll(dir)
 		if err != nil {
-			panic(fmt.Errorf("TempDir cleanup: RemoveAll %q failed: %w", t.tempDir, err))
+			panic(fmt.Errorf("TempDir cleanup: RemoveAll %q failed: %w", dir, err))
 		}
 	})
 
-	return t.tempDir
+	return dir
 }
