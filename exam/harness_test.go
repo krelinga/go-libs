@@ -122,5 +122,28 @@ func TestHarness(t *testing.T) {
 			})
 			wait.Wait()
 		})
+
+		t.Run("sub-test is eventually canceled", func(t *testing.T) {
+			deadlineCh := time.After(1 * time.Second)
+			wait := sync.WaitGroup{}
+			wait.Add(1)
+			h := exam.Harness{}
+			h.Run(func(e exam.E) {
+				e.Run("sub", func(e exam.E) {
+					ctx := e.Context()
+					go func() {
+						select {
+						case <-deadlineCh:
+							// Timeout
+							t.Errorf("context was not canceled in time")
+						case <-ctx.Done():
+							// Canceled as expected
+						}
+						wait.Done()
+					}()
+				})
+			})
+			wait.Wait()
+		})
 	})
 }
