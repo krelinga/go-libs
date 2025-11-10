@@ -330,4 +330,8 @@ func TestHarness(t *testing.T) {
 			})
 		})
 	})
+
+	// TODO: add tests for:
+	// - Setenv()
+	// - TempDir()
 }
