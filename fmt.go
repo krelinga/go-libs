@@ -329,13 +329,13 @@ func (FmtStringer) Fmt(_ Env, v reflect.Value) string {
 }
 
 func FmtOpt(typ reflect.Type, fmt Fmt) Opt {
-	return OptFunc(func(e Env) {
+	return OptFunc(func(e EnvSetter) {
 		e.Set(typ, fmtTag{}, fmt)
 	})
 }
 
 func FmtOptAll(fmt Fmt) Opt {
-	return OptFunc(func(e Env) {
+	return OptFunc(func(e EnvSetter) {
 		e.SetAll(fmtTag{}, fmt)
 	})
 }

@@ -5,18 +5,23 @@ import "reflect"
 type Tag any
 type Val any
 
-type EnvRO interface {
+type Env interface {
 	Get(reflect.Type, Tag) (Val, bool)
 }
 
-type Env interface {
-	EnvRO
+type EnvSetter interface {
 	Set(reflect.Type, Tag, Val)
 	SetAll(Tag, Val)
 }
 
-func NewEnv() Env {
-	return &mapEnv{}
+func NewEnv(opts ...Opt) Env {
+	env := &mapEnv{}
+	for _, opt := range opts {
+		if opt != nil {
+			opt.Update(env)
+		}
+	}
+	return env
 }
 
 type typeToVal interface {
@@ -112,7 +117,9 @@ func WrapEnv(parent Env, opts ...Opt) Env {
 		data:   &mapEnv{},
 	}
 	for _, opt := range opts {
-		opt.Update(we)
+		if opt != nil {
+			opt.Update(we)
+		}
 	}
 	return we
 }

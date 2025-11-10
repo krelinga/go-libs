@@ -65,7 +65,9 @@ func TestMapEnv_Set(t *testing.T) {
 				}()
 			}
 
-			env.Set(tt.typ, tt.tag, tt.val)
+			env = deep.WrapEnv(env, deep.OptFunc(func(e deep.EnvSetter) {
+				e.Set(tt.typ, tt.tag, tt.val)
+			}))
 
 			if tt.wantErr == nil {
 				// Verify the value was set correctly
@@ -121,7 +123,9 @@ func TestMapEnv_SetAll(t *testing.T) {
 				}()
 			}
 
-			env.SetAll(tt.tag, tt.val)
+			env = deep.WrapEnv(env, deep.OptFunc(func(e deep.EnvSetter) {
+				e.SetAll(tt.tag, tt.val)
+			}))
 
 			if tt.wantErr == nil {
 				// Verify the value is available for different types
@@ -154,7 +158,7 @@ func TestMapEnv_Get(t *testing.T) {
 		typ     reflect.Type
 		tag     deep.Tag
 		wantErr error
-		setupFn func(deep.Env)
+		opt     deep.Opt
 		wantVal deep.Val
 		wantOk  bool
 	}{
@@ -162,19 +166,17 @@ func TestMapEnv_Get(t *testing.T) {
 			name: "get existing value",
 			typ:  reflect.TypeOf(""),
 			tag:  "test_tag",
-			setupFn: func(env deep.Env) {
-				env.Set(reflect.TypeOf(""), "test_tag", "test_value")
-			},
+			opt: deep.OptFunc(func(setter deep.EnvSetter) {
+				setter.Set(reflect.TypeOf(""), "test_tag", "test_value")
+			}),
 			wantVal: "test_value",
 			wantOk:  true,
 		},
 		{
-			name: "get non-existing value",
-			typ:  reflect.TypeOf(""),
-			tag:  "non_existing_tag",
-			setupFn: func(env deep.Env) {
-				// Don't set anything
-			},
+			name:    "get non-existing value",
+			typ:     reflect.TypeOf(""),
+			tag:     "non_existing_tag",
+			opt:     nil, // No setup
 			wantVal: nil,
 			wantOk:  false,
 		},
@@ -182,9 +184,9 @@ func TestMapEnv_Get(t *testing.T) {
 			name: "get from SetAll",
 			typ:  reflect.TypeOf(42),
 			tag:  "all_tag",
-			setupFn: func(env deep.Env) {
-				env.SetAll("all_tag", "all_value")
-			},
+			opt: deep.OptFunc(func(setter deep.EnvSetter) {
+				setter.SetAll("all_tag", "all_value")
+			}),
 			wantVal: "all_value",
 			wantOk:  true,
 		},
@@ -204,11 +206,7 @@ func TestMapEnv_Get(t *testing.T) {
 
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			env := deep.NewEnv()
-
-			if tt.setupFn != nil {
-				tt.setupFn(env)
-			}
+			env := deep.NewEnv(tt.opt)
 
 			if tt.wantErr != nil {
 				defer func() {
@@ -242,8 +240,9 @@ func TestMapEnv_Get(t *testing.T) {
 
 func TestWrapEnv(t *testing.T) {
 	t.Run("wrap with no options", func(t *testing.T) {
-		parent := deep.NewEnv()
-		parent.Set(reflect.TypeOf(""), "parent_tag", "parent_value")
+		parent := deep.NewEnv(deep.OptFunc(func(env deep.EnvSetter) {
+			env.Set(reflect.TypeOf(""), "parent_tag", "parent_value")
+		}))
 
 		wrapped := deep.WrapEnv(parent)
 
@@ -260,7 +259,7 @@ func TestWrapEnv(t *testing.T) {
 	t.Run("wrap with options", func(t *testing.T) {
 		parent := deep.NewEnv()
 
-		opt := deep.OptFunc(func(env deep.Env) {
+		opt := deep.OptFunc(func(env deep.EnvSetter) {
 			env.Set(reflect.TypeOf(""), "opt_tag", "opt_value")
 		})
 
@@ -277,11 +276,13 @@ func TestWrapEnv(t *testing.T) {
 	})
 
 	t.Run("child overrides parent", func(t *testing.T) {
-		parent := deep.NewEnv()
-		parent.Set(reflect.TypeOf(""), "tag", "parent_value")
+		parent := deep.NewEnv(deep.OptFunc(func(env deep.EnvSetter) {
+			env.Set(reflect.TypeOf(""), "tag", "parent_value")
+		}))
 
-		wrapped := deep.WrapEnv(parent)
-		wrapped.Set(reflect.TypeOf(""), "tag", "child_value")
+		wrapped := deep.WrapEnv(parent, deep.OptFunc(func(env deep.EnvSetter) {
+			env.Set(reflect.TypeOf(""), "tag", "child_value")
+		}))
 
 		// Child value should override parent
 		val, ok := wrapped.Get(reflect.TypeOf(""), "tag")
@@ -303,11 +304,13 @@ func TestWrapEnv(t *testing.T) {
 	})
 
 	t.Run("fallback to parent", func(t *testing.T) {
-		parent := deep.NewEnv()
-		parent.Set(reflect.TypeOf(""), "parent_only_tag", "parent_value")
+		parent := deep.NewEnv(deep.OptFunc(func(env deep.EnvSetter) {
+			env.Set(reflect.TypeOf(""), "parent_only_tag", "parent_value")
+		}))
 
-		wrapped := deep.WrapEnv(parent)
-		wrapped.Set(reflect.TypeOf(""), "child_only_tag", "child_value")
+		wrapped := deep.WrapEnv(parent, deep.OptFunc(func(env deep.EnvSetter) {
+			env.Set(reflect.TypeOf(""), "child_only_tag", "child_value")
+		}))
 
 		// Should find parent value when not in child
 		val, ok := wrapped.Get(reflect.TypeOf(""), "parent_only_tag")
@@ -331,9 +334,9 @@ func TestWrapEnv(t *testing.T) {
 
 func TestWrappedEnv_SetAll(t *testing.T) {
 	parent := deep.NewEnv()
-	wrapped := deep.WrapEnv(parent)
-
-	wrapped.SetAll("all_tag", "all_value")
+	wrapped := deep.WrapEnv(parent, deep.OptFunc(func(env deep.EnvSetter) {
+		env.SetAll("all_tag", "all_value")
+	}))
 
 	// Should be available for any type
 	val, ok := wrapped.Get(reflect.TypeOf(""), "all_tag")
@@ -346,26 +349,17 @@ func TestWrappedEnv_SetAll(t *testing.T) {
 }
 
 func TestSetOverridesSetAll(t *testing.T) {
-	env := deep.NewEnv()
 	stringType := reflect.TypeOf("")
-
-	// First SetAll
-	env.SetAll("tag", "all_value")
-
-	// Verify SetAll works initially
-	val, ok := env.Get(stringType, "tag")
-	if !ok {
-		t.Error("Expected to find SetAll value initially")
-	}
-	if val != "all_value" {
-		t.Errorf("Expected all_value initially, got %v", val)
-	}
-
-	// Then Set for specific type - this replaces the valForAllTypes with mapTypeToVal
-	env.Set(stringType, "tag", "specific_value")
-
+	allOpt := deep.OptFunc(func(env deep.EnvSetter) {
+		env.SetAll("tag", "all_value")
+	})
+	typeOpt := deep.OptFunc(func(env deep.EnvSetter) {
+		env.Set(stringType, "tag", "specific_value")
+	})
+	env := deep.NewEnv(allOpt, typeOpt)
+	
 	// Specific value should be found
-	val, ok = env.Get(stringType, "tag")
+	val, ok := env.Get(stringType, "tag")
 	if !ok {
 		t.Error("Expected to find value")
 	}
@@ -382,14 +376,14 @@ func TestSetOverridesSetAll(t *testing.T) {
 }
 
 func TestSetAllOverridesSet(t *testing.T) {
-	env := deep.NewEnv()
 	stringType := reflect.TypeOf("")
-
-	// First Set for specific type
-	env.Set(stringType, "tag", "specific_value")
-
-	// Then SetAll
-	env.SetAll("tag", "all_value")
+	allOpt := deep.OptFunc(func(env deep.EnvSetter) {
+		env.SetAll("tag", "all_value")
+	})
+	typeOpt := deep.OptFunc(func(env deep.EnvSetter) {
+		env.Set(stringType, "tag", "specific_value")
+	})
+	env := deep.NewEnv(typeOpt, allOpt)
 
 	// SetAll should override specific Set
 	val, ok := env.Get(stringType, "tag")

@@ -90,13 +90,13 @@ func (o OrdDeep) Ord(env Env, v1, v2 reflect.Value) int {
 }
 
 func OrdOpt(t reflect.Type, ord Ord) Opt {
-	return OptFunc(func(e Env) {
+	return OptFunc(func(e EnvSetter) {
 		e.Set(t, ordTag{}, ord)
 	})
 }
 
 func OrdOptAll(ord Ord) Opt {
-	return OptFunc(func(e Env) {
+	return OptFunc(func(e EnvSetter) {
 		e.SetAll(ordTag{}, ord)
 	})
 }

@@ -288,13 +288,13 @@ k2loop:
 }
 
 func EqOpt(t reflect.Type, eq Eq) Opt {
-	return OptFunc(func(env Env) {
+	return OptFunc(func(env EnvSetter) {
 		env.Set(t, eqTag{}, eq)
 	})
 }
 
 func EqOptAll(eq Eq) Opt {
-	return OptFunc(func(env Env) {
+	return OptFunc(func(env EnvSetter) {
 		env.SetAll(eqTag{}, eq)
 	})
 }
