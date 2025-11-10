@@ -178,8 +178,8 @@ func TestHarness(t *testing.T) {
 
 	t.Run("Recording Methods", func(t *testing.T) {
 		tests := []struct {
-			name string
-			f func(exam.E)
+			name    string
+			f       func(exam.E)
 			wantLog *exam.Log
 		}{
 			{
@@ -189,7 +189,7 @@ func TestHarness(t *testing.T) {
 				},
 				wantLog: &exam.Log{
 					Error: []string{"test error"},
-					Fail: true,
+					Fail:  true,
 				},
 			},
 			{
@@ -199,7 +199,7 @@ func TestHarness(t *testing.T) {
 				},
 				wantLog: &exam.Log{
 					Error: []string{"test errorf"},
-					Fail: true,
+					Fail:  true,
 				},
 			},
 			{
@@ -249,7 +249,7 @@ func TestHarness(t *testing.T) {
 					e.Helper()
 				},
 				wantLog: &exam.Log{
-					Helper:  true,
+					Helper: true,
 				},
 			},
 			{
@@ -258,7 +258,7 @@ func TestHarness(t *testing.T) {
 					e.Log("a log message")
 				},
 				wantLog: &exam.Log{
-					Log:     []string{"a log message"},
+					Log: []string{"a log message"},
 				},
 			},
 			{
@@ -267,7 +267,7 @@ func TestHarness(t *testing.T) {
 					e.Logf("log %s", "message")
 				},
 				wantLog: &exam.Log{
-					Log:     []string{"log message"},
+					Log: []string{"log message"},
 				},
 			},
 			{
@@ -313,5 +313,21 @@ func TestHarness(t *testing.T) {
 				}
 			})
 		}
+	})
+
+	t.Run("Name", func(t *testing.T) {
+		h := exam.Harness{
+			Name: "root-name",
+		}
+		h.Run(func(e exam.E) {
+			if e.Name() != "root-name" {
+				t.Errorf("expected root-name, got %q", e.Name())
+			}
+			e.Run("sub-name", func(e exam.E) {
+				if e.Name() != "root-name/sub-name" {
+					t.Errorf("expected root-name/sub-name, got %q", e.Name())
+				}
+			})
+		})
 	})
 }
