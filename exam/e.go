@@ -40,7 +40,6 @@ type TestingT interface {
 	Run(name string, f func(t *testing.T)) bool
 }
 
-// Similar to testing.E, but with deep.Env support.
 type E interface {
 	Common
 	Run(name string, f func(E)) bool
