@@ -5,10 +5,14 @@ import "reflect"
 type Tag any
 type Val any
 
+type EnvRO interface {
+	Get(reflect.Type, Tag) (Val, bool)
+}
+
 type Env interface {
+	EnvRO
 	Set(reflect.Type, Tag, Val)
 	SetAll(Tag, Val)
-	Get(reflect.Type, Tag) (Val, bool)
 }
 
 func NewEnv() Env {
