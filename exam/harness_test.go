@@ -1,6 +1,7 @@
 package exam_test
 
 import (
+	"context"
 	"os"
 	"testing"
 
@@ -57,7 +58,7 @@ func TestHarness(t *testing.T) {
 		}
 	})
 
-	t.Run("Cleanup" , func(t *testing.T) {
+	t.Run("Cleanup", func(t *testing.T) {
 		h := exam.Harness{}
 		called := false
 		h.Run(func(e exam.E) {
@@ -68,5 +69,35 @@ func TestHarness(t *testing.T) {
 		if !called {
 			t.Errorf("cleanup not called")
 		}
+	})
+
+	t.Run("Context", func(t *testing.T) {
+		t.Run("nil", func(t *testing.T) {
+			h := exam.Harness{}
+			h.Run(func(e exam.E) {
+				ctx := e.Context()
+				if ctx == nil {
+					t.Errorf("expected non-nil context")
+				}
+			})
+		})
+
+		t.Run("with value", func(t *testing.T) {
+			type keyType struct{}
+			parentCtx := context.WithValue(context.Background(), keyType{}, "test-value")
+			h := exam.Harness{
+				Ctx: parentCtx,
+			}
+			h.Run(func(e exam.E) {
+				ctx := e.Context()
+				v, ok := ctx.Value(keyType{}).(string)
+				if !ok {
+					t.Errorf("expected string value, got %T", ctx.Value(keyType{}))
+				}
+				if v != "test-value" {
+					t.Errorf("expected test-value, got %q", v)
+				}
+			})
+		})
 	})
 }
