@@ -20,6 +20,7 @@ type resultImpl struct {
 }
 
 func (r *resultImpl) Log(args ...any) Result {
+	r.e.Helper()
 	if !r.ok {
 		r.e.Log(args...)
 	}
@@ -27,6 +28,7 @@ func (r *resultImpl) Log(args ...any) Result {
 }
 
 func (r *resultImpl) Logf(format string, args ...any) Result {
+	r.e.Helper()
 	if !r.ok {
 		r.e.Logf(format, args...)
 	}
@@ -38,6 +40,7 @@ func (r *resultImpl) Ok() bool {
 }
 
 func (r *resultImpl) Must() {
+	r.e.Helper()
 	if !r.ok {
 		r.e.FailNow()
 	}
