@@ -7,10 +7,10 @@ type Result interface {
 	Must()
 }
 
-func NewResult(ok bool, t E) Result {
+func NewResult(ok bool, e E) Result {
 	return &resultImpl{
 		ok: ok,
-		e:  t,
+		e:  e,
 	}
 }
 
