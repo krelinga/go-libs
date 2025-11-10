@@ -7,7 +7,9 @@ import (
 	"testing"
 	"time"
 
+	"github.com/krelinga/go-deep"
 	"github.com/krelinga/go-deep/exam"
+	"github.com/krelinga/go-deep/match"
 )
 
 func TestHarness(t *testing.T) {
@@ -170,6 +172,145 @@ func TestHarness(t *testing.T) {
 						t.Errorf("expected deadline %v, got %v", tt.deadline, dl)
 					}
 				})
+			})
+		}
+	})
+
+	t.Run("Recording Methods", func(t *testing.T) {
+		tests := []struct {
+			name string
+			f func(exam.E)
+			wantLog *exam.Log
+		}{
+			{
+				name: "Error",
+				f: func(e exam.E) {
+					e.Error("test error")
+				},
+				wantLog: &exam.Log{
+					Error: []string{"test error"},
+					Fail: true,
+				},
+			},
+			{
+				name: "Errorf",
+				f: func(e exam.E) {
+					e.Errorf("test %s", "errorf")
+				},
+				wantLog: &exam.Log{
+					Error: []string{"test errorf"},
+					Fail: true,
+				},
+			},
+			{
+				name: "Fail",
+				f: func(e exam.E) {
+					e.Fail()
+				},
+				wantLog: &exam.Log{
+					Fail: true,
+				},
+			},
+			{
+				name: "FailNow",
+				f: func(e exam.E) {
+					e.FailNow()
+				},
+				wantLog: &exam.Log{
+					Fail:    true,
+					FailNow: true,
+				},
+			},
+			{
+				name: "Fatal",
+				f: func(e exam.E) {
+					e.Fatal("fatal error")
+				},
+				wantLog: &exam.Log{
+					Fatal:   []string{"fatal error"},
+					Fail:    true,
+					FailNow: true,
+				},
+			},
+			{
+				name: "Fatalf",
+				f: func(e exam.E) {
+					e.Fatalf("fatal %s", "errorf")
+				},
+				wantLog: &exam.Log{
+					Fatal:   []string{"fatal errorf"},
+					Fail:    true,
+					FailNow: true,
+				},
+			},
+			{
+				name: "Helper",
+				f: func(e exam.E) {
+					e.Helper()
+				},
+				wantLog: &exam.Log{
+					Helper:  true,
+				},
+			},
+			{
+				name: "Log",
+				f: func(e exam.E) {
+					e.Log("a log message")
+				},
+				wantLog: &exam.Log{
+					Log:     []string{"a log message"},
+				},
+			},
+			{
+				name: "Logf",
+				f: func(e exam.E) {
+					e.Logf("log %s", "message")
+				},
+				wantLog: &exam.Log{
+					Log:     []string{"log message"},
+				},
+			},
+			{
+				name: "Parallel",
+				f: func(e exam.E) {
+					e.Parallel()
+				},
+				wantLog: &exam.Log{
+					Parallel: true,
+				},
+			},
+			{
+				name: "Skip",
+				f: func(e exam.E) {
+					e.Skip("skip message")
+				},
+				wantLog: &exam.Log{
+					Skip:    []string{"skip message"},
+					SkipNow: true,
+				},
+			},
+			{
+				name: "Skipf",
+				f: func(e exam.E) {
+					e.Skipf("skip %s", "message")
+				},
+				wantLog: &exam.Log{
+					Skip:    []string{"skip message"},
+					SkipNow: true,
+				},
+			},
+		}
+		for _, tt := range tests {
+			t.Run(tt.name, func(t *testing.T) {
+				h := exam.Harness{}
+				gotLog := h.Run(func(e exam.E) {
+					tt.f(e)
+				})
+				matcher := match.Equal(tt.wantLog)
+				result := matcher.Match(deep.NewEnv(), match.NewVals1(gotLog))
+				if !result.Matched() {
+					t.Errorf("log mismatch:\n%s", result)
+				}
 			})
 		}
 	})
