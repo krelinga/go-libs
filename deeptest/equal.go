@@ -1,15 +1,18 @@
 package deeptest
 
-import "github.com/krelinga/go-deep/match"
+import (
+	"github.com/krelinga/go-deep"
+	"github.com/krelinga/go-deep/match"
+)
 
-func Equal[T any](env Env, a, b T) Result {
-	env.Helper()
+func Equal[Type any](t T, env deep.Env, a, b Type) Result {
+	t.Helper()
 	m := match.Equal(b)
-	return Match(env, a, m)
+	return Match(t, env, a, m)
 }
 
-func NotEqual[T any](env Env, a, b T) Result {
-	env.Helper()
+func NotEqual[Type any](t T, env deep.Env, a, b Type) Result {
+	t.Helper()
 	m := match.NotEqual(b)
-	return Match(env, a, m)
+	return Match(t, env, a, m)
 }

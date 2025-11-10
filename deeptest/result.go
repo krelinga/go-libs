@@ -1,5 +1,7 @@
 package deeptest
 
+import "github.com/krelinga/go-deep"
+
 type Result interface {
 	Log(...any) Result
 	Logf(string, ...any) Result
@@ -9,19 +11,20 @@ type Result interface {
 
 type resultImpl struct {
 	ok  bool
-	env Env
+	t T
+	env deep.Env
 }
 
 func (r *resultImpl) Log(args ...any) Result {
 	if !r.ok {
-		r.env.Log(args...)
+		r.t.Log(args...)
 	}
 	return r
 }
 
 func (r *resultImpl) Logf(format string, args ...any) Result {
 	if !r.ok {
-		r.env.Logf(format, args...)
+		r.t.Logf(format, args...)
 	}
 	return r
 }
@@ -32,6 +35,6 @@ func (r *resultImpl) Ok() bool {
 
 func (r *resultImpl) Must() {
 	if !r.ok {
-		r.env.FailNow()
+		r.t.FailNow()
 	}
 }
