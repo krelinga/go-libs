@@ -17,6 +17,12 @@ func (nf namedField) GetField(t reflect.Type) reflect.StructField {
 	if !ok {
 		panic(fmt.Errorf("%w: struct %s does not have field %q", ErrWrongType, t, string(nf)))
 	}
+	if len(field.Index) != 1 {
+		panic(fmt.Errorf("%w: field %q is not a root-level field in struct %s", ErrWrongType, string(nf), t))
+	}
+	if field.Anonymous {
+		panic(fmt.Errorf("%w: field %q is an embedded field in struct %s", ErrWrongType, string(nf), t))
+	}
 	return field
 }
 
@@ -39,13 +45,17 @@ type embedField struct {
 }
 
 func (ef embedField) GetField(t reflect.Type) reflect.StructField {
-	for i := range t.NumField() {
-		field := t.Field(i)
-		if field.Type == ef.Typ && field.Anonymous {
-			return field
-		}
+	field, ok := t.FieldByName(t.Name())
+	if !ok {
+		panic(fmt.Errorf("%w: struct %s does not have field %q", ErrWrongType, t, field.Name))
 	}
-	panic(fmt.Errorf("%w: struct %s does not have embedded field of type %s", ErrWrongType, t, ef.Typ))
+	if len(field.Index) != 1 {
+		panic(fmt.Errorf("%w: field %q is not a root-level field in struct %s", ErrWrongType, field.Name, t))
+	}
+	if !field.Anonymous || field.Type != ef.Typ {
+		panic(fmt.Errorf("%w: field %q is not an embedded field of type %s in struct %s", ErrWrongType, field.Name, ef.Typ, t))
+	}
+	return field
 }
 
 func (ef embedField) fieldIsAClosedType() {}
