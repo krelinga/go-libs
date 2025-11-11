@@ -18,22 +18,12 @@ func TestMatchVals(t *testing.T) {
 		{
 			name:  "real matcher matches",
 			inVal: match.NewVals1(42),
-			logMatcher: match.Equal(&exam.Log{
-				Helper: true,
-			}),
+			logMatcher: matchLogOk(),
 		},
 		{
 			name:  "real matcher does not match",
 			inVal: match.NewVals1(43),
-			logMatcher: match.Pointer(match.Struct{
-				Fields: map[deep.Field]match.Matcher{
-					deep.NamedField("Error"): match.Len(match.Equal(1)),
-				},
-				Partial: match.Equal(exam.Log{
-					Helper: true,
-					Fail:   true,
-				}),
-			}),
+			logMatcher: matchLogError(),
 		},
 	}
 	for _, tt := range tests {
@@ -60,22 +50,12 @@ func TestMatch(t *testing.T) {
 		{
 			name: "real matcher matches",
 			in:   42,
-			logMatcher: match.Equal(&exam.Log{
-				Helper: true,
-			}),
+			logMatcher: matchLogOk(),
 		},
 		{
 			name: "real matcher does not match",
 			in:   43,
-			logMatcher: match.Pointer(match.Struct{
-				Fields: map[deep.Field]match.Matcher{
-					deep.NamedField("Error"): match.Len(match.Equal(1)),
-				},
-				Partial: match.Equal(exam.Log{
-					Helper: true,
-					Fail:   true,
-				}),
-			}),
+			logMatcher: matchLogError(),
 		},
 	}
 	for _, tt := range tests {

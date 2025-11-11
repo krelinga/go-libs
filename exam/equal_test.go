@@ -20,24 +20,14 @@ func TestEqual(t *testing.T) {
 			a:    5,
 			b:    5,
 			want: true,
-			matcher: match.Equal(&exam.Log{
-				Helper: true,
-			}),
+			matcher: matchLogOk(),
 		},
 		{
 			name: "a not equal to b",
 			a:    5,
 			b:    6,
 			want: false,
-			matcher: match.Pointer(match.Struct{
-				Fields: map[deep.Field]match.Matcher{
-					deep.NamedField("Error"): match.Len(match.Equal(1)),
-				},
-				Partial: match.Equal(exam.Log{
-					Helper: true,
-					Fail:   true,
-				}),
-			}),
+			matcher: matchLogError(),
 		},
 	}
 	for _, tt := range tests {
@@ -68,24 +58,14 @@ func TestNotEqual(t *testing.T) {
 			a:    5,
 			b:    6,
 			want: true,
-			matcher: match.Equal(&exam.Log{
-				Helper: true,
-			}),
+			matcher: matchLogOk(),
 		},
 		{
 			name: "a equal to b",
 			a:    5,
 			b:    5,
 			want: false,
-			matcher: match.Pointer(match.Struct{
-				Fields: map[deep.Field]match.Matcher{
-					deep.NamedField("Error"): match.Len(match.Equal(1)),
-				},
-				Partial: match.Equal(exam.Log{
-					Helper: true,
-					Fail:   true,
-				}),
-			}),
+			matcher: matchLogError(),
 		},
 	}
 	for _, tt := range tests {
