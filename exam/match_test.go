@@ -9,7 +9,7 @@ import (
 )
 
 func TestMatchVals(t *testing.T) {
-	// TODO: add more tests with fake matchers where I can control the output.
+	// TODO: add more tests with fake matchers where I can control the output?
 	tests := []struct {
 		name       string
 		inVal      match.Vals
