@@ -26,11 +26,13 @@ func TestMatchVals(t *testing.T) {
 			name:  "real matcher does not match",
 			inVal: match.NewVals1(43),
 			logMatcher: match.Pointer(match.Struct{
-				"Error":   match.Len(match.Equal(1)),
-				"Helper":  match.Equal(true),
-				"Fail":    match.Equal(true),
-				"Fatal":   match.Len(match.Equal(0)),
-				"FailNow": match.Equal(false),
+				Fields: map[deep.Field]match.Matcher{
+					deep.NamedField("Error"): match.Len(match.Equal(1)),
+				},
+				Partial: match.Equal(exam.Log{
+					Helper: true,
+					Fail:   true,
+				}),
 			}),
 		},
 	}

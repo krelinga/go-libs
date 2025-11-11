@@ -7,29 +7,7 @@ import (
 	"github.com/krelinga/go-deep"
 )
 
-type Struct map[string]Matcher
-
-func (s Struct) Match(env deep.Env, vals Vals) Result {
-	got := vals.Want1()
-	if got.Kind() != reflect.Struct {
-		panic(fmt.Errorf("%w: value is not a struct: got %s", ErrBadType, got.Kind()))
-	}
-	for fieldName, matcher := range s {
-		t := got.Type()
-		field, ok := t.FieldByName(fieldName)
-		if !ok {
-			panic(fmt.Errorf("%w: struct does not have field %q", ErrBadType, fieldName))
-		}
-		fieldVal := got.FieldByIndex(field.Index)
-		result := matcher.Match(env, Vals{fieldVal})
-		if !result.Matched() {
-			return NewResult(false, fmt.Sprintf("field %q does not match", fieldName))
-		}
-	}
-	return NewResult(true, "struct matches")
-}
-
-type Struct2 struct {
+type Struct struct {
 	// Matchers for individual fields.
 	Fields map[deep.Field]Matcher
 
@@ -38,7 +16,7 @@ type Struct2 struct {
 	Partial Matcher
 }
 
-func (s Struct2) Match(env deep.Env, vals Vals) Result {
+func (s Struct) Match(env deep.Env, vals Vals) Result {
 	got := vals.Want1()
 	if got.Kind() != reflect.Struct {
 		panic(fmt.Errorf("%w: value is not a struct: got %s", ErrBadType, got.Kind()))
