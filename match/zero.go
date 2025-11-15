@@ -1,6 +1,6 @@
 package match
 
-import "github.com/krelinga/go-deep"
+import "github.com/krelinga/go-deep/deep"
 
 func Zero() Matcher {
 	return Func(func(env deep.Env, vals Vals) Result {

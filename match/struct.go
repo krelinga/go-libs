@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"reflect"
 
-	"github.com/krelinga/go-deep"
+	"github.com/krelinga/go-deep/deep"
 )
 
 type Struct struct {

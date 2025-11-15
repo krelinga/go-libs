@@ -7,7 +7,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/krelinga/go-deep"
+	"github.com/krelinga/go-deep/deep"
 	"github.com/krelinga/go-deep/exam"
 	"github.com/krelinga/go-deep/match"
 )

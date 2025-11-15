@@ -3,7 +3,7 @@ package match
 import (
 	"fmt"
 
-	"github.com/krelinga/go-deep"
+	"github.com/krelinga/go-deep/deep"
 )
 
 type MapEntry struct {
