@@ -4,8 +4,6 @@ import (
 	"context"
 	"testing"
 	"time"
-
-	"github.com/krelinga/go-libs/deep"
 )
 
 type Common interface {
@@ -58,7 +56,7 @@ func (t *eImpl) Run(name string, f func(E)) bool {
 	})
 }
 
-func New(t TestingT, env deep.Env) E {
+func New(t TestingT) E {
 	return &eImpl{
 		TestingT: t,
 	}
