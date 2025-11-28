@@ -5,6 +5,7 @@ import (
 	"reflect"
 
 	"github.com/krelinga/go-libs/deep"
+	"github.com/krelinga/go-libs/zero"
 )
 
 type Vals []reflect.Value
@@ -60,15 +61,28 @@ func NewVals3[T1, T2, T3 any](v1 T1, v2 T2, v3 T3) Vals {
 
 func Want1[T any](vals Vals) T {
 	vals.Check(1)
-	return vals[0].Interface().(T)
+	return getType[T](vals[0])
 }
 
 func Want2[T1, T2 any](vals Vals) (T1, T2) {
 	vals.Check(2)
-	return vals[0].Interface().(T1), vals[1].Interface().(T2)
+	return getType[T1](vals[0]), getType[T2](vals[1])
 }
 
 func Want3[T1, T2, T3 any](vals Vals) (T1, T2, T3) {
 	vals.Check(3)
-	return vals[0].Interface().(T1), vals[1].Interface().(T2), vals[2].Interface().(T3)
+	return getType[T1](vals[0]), getType[T2](vals[1]), getType[T3](vals[2])
+}
+
+func getType[T any](v reflect.Value) T {
+	t := reflect.TypeFor[T]()
+	if t.Kind() == reflect.Interface {
+		if !v.Type().Implements(t) {
+			panic(fmt.Errorf("%w: value of type %s does not implement %s", ErrBadVals, v.Type(), t))
+		}
+		if v.IsNil() {
+			return zero.For[T]()
+		}
+	}
+	return v.Interface().(T)
 }
